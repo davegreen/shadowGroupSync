@@ -84,7 +84,9 @@ Function Get-ShadowGroupMembers($groupname, $domain, $destou)
 {
   if (!(Get-ADGroup -Filter {SamAccountName -eq $groupname} -SearchBase $destou -Server $domain))
   {
-    New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Server $domain -Groupcategory Security -GroupScope Universal
+    #For use with Fine Grained Password Policies, the GroupScope should be Global.
+    #If you are using this script with child domains, it may need to be set to Universal.
+    New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Server $domain -Groupcategory Security -GroupScope Global
   }
   
   $groupmembers = Get-ADGroupMember -Identity $groupname -Server $domain
