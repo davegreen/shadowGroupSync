@@ -4,9 +4,10 @@ Readme - shadowGroupSync
 Description
 ---------------------
 
-Now is the time for all good men to come to
-the aid of their country. This is just a
-regular paragraph.
+A PowerShell script that provides an easy way to manage Active Directory shadow groups. 
+This script requires the [http://technet.microsoft.com/en-us/library/ee617195.aspx](Active Directory PowerShell module) from Microsoft. 
+
+If you are running Windows 7, this can be installed with the [http://www.microsoft.com/en-us/download/details.aspx?id=7887](Microsoft Remote Server Administration Tools).
 
 Usage
 ---------------------
