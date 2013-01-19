@@ -5,9 +5,9 @@ Description
 ---------------------
 
 A PowerShell script that provides an easy way to manage Active Directory shadow groups. 
-This script requires the [http://technet.microsoft.com/en-us/library/ee617195.aspx](Active Directory PowerShell module) from Microsoft. 
+This script requires the [Active Directory PowerShell module](http://technet.microsoft.com/en-us/library/ee617195.aspx) from Microsoft. 
 
-If you are running Windows 7, this can be installed with the [http://www.microsoft.com/en-us/download/details.aspx?id=7887](Microsoft Remote Server Administration Tools).
+If you are running Windows 7, this can be installed with the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-us/download/details.aspx?id=7887).
 
 Usage
 ---------------------
