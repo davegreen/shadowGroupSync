@@ -6,6 +6,7 @@
 #Domain,ObjType,SourceOU,DestOU,GroupName
 #"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1"
 #"contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2"
+#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2"
 #"contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1"
 #"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2"
 
@@ -48,35 +49,49 @@ else
 $csv = Import-Csv $csvfile
 
 #For logging, Run with: powershell.exe -file "c:\path\shadowGroupSync.ps1" | tee -file ('c:\path\log\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')
-Import-Module ActiveDirectory
+Import-Module ActiveDirectory -ErrorAction Stop
 
-#Gets AD objects from the specified OU and returns the collection.
-Function Get-Obj($searchbase, $domain, $type)
+#Gets AD objects from the specified OU or OUs and returns the collection.
+Function Get-SourceObjects($searchbase, $domain, $type)
 {
   $obj = $null
-  Try
+  
+  $bases = $searchbase.Split(";")
+  #If the searchbase is an array of searchbases, recall the function, concatenate the results and pass back the complete set.
+  if ($bases.Count -gt 1)
   {
-    #You can add you own types here and reference them in the csv.
-    #'$obj' must be a collection of AD objects with a Name and an ObjectGUID property.
-    switch ($type)
+    foreach ($base in $bases)
     {
-      "computer" {$obj = Get-ADComputer -Filter {name -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
-      "mailuser" {$obj = Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
-      "user" {$obj = Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
-      default 
+      $multiobj += Get-SourceObjects $base $domain $type
+    }
+    return $multiobj
+  }
+  else
+  {
+    Try
+    {
+      #You can add you own types here and reference them in the csv.
+      #'$obj' must be a collection of AD objects with a Name and an ObjectGUID property.
+      switch ($type)
       {
-        Write-Output "Invalid type specified"
-        Exit
+        "computer" {$obj = Get-ADComputer -Filter {name -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
+        "mailuser" {$obj = Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
+        "user" {$obj = Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
+        default 
+        {
+          Write-Output "Invalid type specified"
+          Exit
+        }
       }
     }
-  }
   
-  Catch
-  {
-    Write-Output ("Error:" + $_)
-    Exit
-  }  
-  return $obj
+    Catch
+    {
+      Write-Output ("Error:" + $_)
+      Exit
+    } 
+    return $obj
+  }
 }
 
 #Gets the members from the shadow group. If the group does not exist, create it.
@@ -112,7 +127,7 @@ foreach ($cs in $csv)
   Write-Output $cs
   
   #Populate the source and destination set for comparison.
-  $obj = Get-Obj $cs.SourceOU $cs.Domain $cs.ObjType
+  $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType
   $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Domain $cs.Destou
   
   #If the group is empty, populate the group.
