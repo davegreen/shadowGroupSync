@@ -48,7 +48,7 @@ else
 $csv = Import-Csv $csvfile
 
 #For logging, Run with: powershell.exe -file "c:\path\shadowGroupSync.ps1" | tee -file ('c:\path\log\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')
-Import-Module ActiveDirectory
+Import-Module ActiveDirectory -ErrorAction Stop
 
 #Gets AD objects from the specified OU and returns the collection.
 Function Get-Obj($searchbase, $domain, $type)
