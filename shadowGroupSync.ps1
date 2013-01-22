@@ -1,5 +1,4 @@
 #Author: Dave Green (david.green@tookitaway.co.uk)
-#Version 4 - 25/10/2012
 
 #--CSV Format--
 
