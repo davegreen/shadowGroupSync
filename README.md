@@ -51,7 +51,7 @@ Once you have downloaded the script, you will need to create the CSV file where 
 - SourceOU is the OU (or OUs, separated by a semicolon) to query for source objects for the shadow group.
 - DestOU is the OU where you would like the shadow group to be created.
 - GroupName specifies the name of the shadow group.
-- GroupType specifies the type of group to create (Security/Distribution)
+- GroupType specifies the whether a Security or Distribution group will be created. The default is Security.
 
 You can place the CSV file anywhere on the system, as long as the script can be told where to find it.
 
