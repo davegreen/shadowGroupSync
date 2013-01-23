@@ -1,14 +1,13 @@
 #Author: Dave Green (david.green@tookitaway.co.uk)
-#Version 4 - 25/10/2012
 
 #--CSV Format--
 
-#Domain,ObjType,SourceOU,DestOU,GroupName
-#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1"
-#"contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2"
-#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2"
-#"contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1"
-#"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2"
+#Domain,ObjType,SourceOU,DestOU,GroupName,GroupType
+#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security"
+#"contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security"
+#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security"
+#"contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution"
+#"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution"
 
 param([string]$file)
 $currentdir = Get-Location
@@ -95,13 +94,13 @@ Function Get-SourceObjects($searchbase, $domain, $type)
 }
 
 #Gets the members from the shadow group. If the group does not exist, create it.
-Function Get-ShadowGroupMembers($groupname, $domain, $destou)
+Function Get-ShadowGroupMembers($groupname, $domain, $destou, $grouptype)
 {
   if (!(Get-ADGroup -Filter {SamAccountName -eq $groupname} -SearchBase $destou -Server $domain))
   {
     #For use with Fine Grained Password Policies, the GroupScope should be Global.
     #If you are using this script with child domains, it may need to be set to Universal.
-    New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Server $domain -Groupcategory Security -GroupScope Global
+    New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Server $domain -Groupcategory $grouptype -GroupScope Global
   }
   
   $groupmembers = Get-ADGroupMember -Identity $groupname -Server $domain
@@ -120,6 +119,16 @@ Function Remove-ShadowGroupMember($domain, $group, $memberguid)
   Remove-ADGroupMember -Identity $group -Member $memberguid -Server $domain -Confirm:$false
 }
 
+Function Check-GroupCategory($groupcategory)
+{
+  switch ($groupcategory)
+  {
+    "Distribution" { return 0 }
+    "Security" { return 1 }
+    default { return 1 }
+  }
+}
+
 #Iterate through the CSV and action each shadow group.
 foreach ($cs in $csv)
 {
@@ -128,7 +137,7 @@ foreach ($cs in $csv)
   
   #Populate the source and destination set for comparison.
   $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType
-  $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Domain $cs.Destou
+  $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Domain $cs.Destou (Check-GroupCategory $cs.GroupType)
   
   #If the group is empty, populate the group.
   if ((!$groupmembers) -and ($obj))
