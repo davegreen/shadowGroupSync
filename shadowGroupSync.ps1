@@ -119,13 +119,14 @@ Function Remove-ShadowGroupMember($domain, $group, $memberguid)
   Remove-ADGroupMember -Identity $group -Member $memberguid -Server $domain -Confirm:$false
 }
 
-Function Check-GroupType($grouptype)
+Function Check-GroupCategory($groupcategory)
 {
-  if (($grouptype -ne "Security") -or ($grouptype -ne "Distribution"))
+  switch ($groupcategory)
   {
-    $grouptype = "Security"
+    "Distribution" { return 0 }
+    "Security" { return 1 }
+    default { return 1 }
   }
-  return $grouptype
 }
 
 #Iterate through the CSV and action each shadow group.
@@ -134,12 +135,9 @@ foreach ($cs in $csv)
   Write-Output ("`n--------------------------------------------------------`n")
   Write-Output $cs
   
-  #Sanity check grouptype
-  $grouptype = Check-GroupType $cs.grouptype
-
   #Populate the source and destination set for comparison.
   $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType
-  $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Domain $cs.Destou $grouptype
+  $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Domain $cs.Destou (Check-GroupCategory $cs.GroupType)
   
   #If the group is empty, populate the group.
   if ((!$groupmembers) -and ($obj))
