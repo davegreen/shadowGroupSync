@@ -100,47 +100,41 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
 #Gets the members from the shadow group. If the group does not exist, create it.
 #Param1: $groupname - The shadowgroup name to get members from.
 #        Example: "ShadowGroup-1"
-#Param2: $domain - The domain or server to query for source objects.
-#        Example: "contoso.com"
-#Param3: $destou - The OU the shadowgroup exists in.
+#Param2: $destou - The OU the shadowgroup exists in.
 #        Example: "OU=ShadowGroups,DC=contoso,DC=com"
-#Param4: $scope - The grouptype the shadowgroup should be created as (If it doesn't exist)
+#Param3: $scope - The grouptype the shadowgroup should be created as (If it doesn't exist)
 #        Example: 0 (Distribution) or 1 (Security)
-Function Get-ShadowGroupMembers($groupname, $domain, $destou, $grouptype)
+Function Get-ShadowGroupMembers($groupname, $destou, $grouptype)
 {
-  if (!(Get-ADGroup -Filter {SamAccountName -eq $groupname} -SearchBase $destou -Server $domain))
+  if (!(Get-ADGroup -Filter {SamAccountName -eq $groupname} -SearchBase $destou))
   {
     #For use with Fine Grained Password Policies, the GroupScope should be Global.
     #If you are using this script with child domains, it may need to be set to Universal.
-    New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Server $domain -Groupcategory $grouptype -GroupScope Global
+    New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Groupcategory $grouptype -GroupScope Global
   }
   
-  $groupmembers = Get-ADGroupMember -Identity $groupname -Server $domain
+  $groupmembers = Get-ADGroupMember -Identity $groupname
   return $groupmembers
 }
 
 #Adds the specified object to the group.
-#Param1: $domain - The domain or server to query.
-#        Example: "contoso.com"
-#Param2: $groupname - The shadowgroup to add the member to.
+#Param1: $groupname - The shadowgroup to add the member to.
 #        Example: "ShadowGroup-1"
 #Param2: $member - The member to add to the shadowgroup, can be a SAMAccountName, ObjectGUID or an AD user object.
 #        Example: "SmithJ" (SAMAccountName for John Smith)
-Function Add-ShadowGroupMember($domain, $group, $member)
+Function Add-ShadowGroupMember($group, $member)
 {
-  Add-ADGroupMember -Identity $group -Member $member -Server $domain
+  Add-ADGroupMember -Identity $group -Member $member
 }
 
 #Removes the specified object from the group.
-#Param1: $domain - The domain or server to query.
-#        Example: "contoso.com"
-#Param2: $groupname - The shadowgroup to remove the member from.
+#Param1: $groupname - The shadowgroup to remove the member from.
 #        Example: "ShadowGroup-1"
 #Param2: $member - The member to remove from the shadowgroup, can be a SAMAccountName, ObjectGUID or an AD user object.
 #        Example: "SmithJ" (SAMAccountName for John Smith)
-Function Remove-ShadowGroupMember($domain, $group, $memberguid)
+Function Remove-ShadowGroupMember($group, $memberguid)
 {
-  Remove-ADGroupMember -Identity $group -Member $memberguid -Server $domain -Confirm:$false
+  Remove-ADGroupMember -Identity $group -Member $memberguid -Confirm:$false
 }
 
 #Resolve the group category to be used with Get-ShadowGroupMembers, returns 1 for Security if unknown.
@@ -178,7 +172,7 @@ foreach ($cs in $csv)
   
   #Populate the source and destination set for comparison.
   $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.scope)
-  $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Domain $cs.Destou (Check-GroupCategory $cs.GroupType)
+  $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Destou (Check-GroupCategory $cs.GroupType)
   
   #If the group is empty, populate the group.
   if ((!$groupmembers) -and ($obj))
@@ -187,7 +181,7 @@ foreach ($cs in $csv)
     foreach ($o in $obj)
     {
       Write-Output ("Adding " + $o.Name)
-      Add-ShadowGroupMember $cs.Domain $cs.GroupName $o.objectGUID
+      Add-ShadowGroupMember $cs.GroupName $o.objectGUID
     }
   }
   
@@ -197,7 +191,7 @@ foreach ($cs in $csv)
     foreach ($member in $groupmembers)
     {
       Write-Output ("Removing " + ($member.Name))
-      Remove-ShadowGroupMember $cs.Domain $cs.GroupName $member.objectGUID
+      Remove-ShadowGroupMember $cs.GroupName $member.objectGUID
     }
   }
   
@@ -209,13 +203,13 @@ foreach ($cs in $csv)
       {$_.SideIndicator -eq "=>"}
       {
         Write-Output ("Adding   " + ($_.Name))
-        Add-ShadowGroupMember $cs.Domain $cs.GroupName $_.objectGUID
+        Add-ShadowGroupMember $cs.GroupName $_.objectGUID
       }
       
       {$_.SideIndicator -eq "<="} 
       {
         Write-Output ("Removing " + ($_.Name))
-        Remove-ShadowGroupMember $cs.Domain $cs.GroupName $_.objectGUID
+        Remove-ShadowGroupMember $cs.GroupName $_.objectGUID
       }
     }
   }
