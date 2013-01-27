@@ -2,13 +2,14 @@
 
 #--CSV Format--
 
-#Domain,ObjType,SourceOU,DestOU,GroupName,GroupType
-#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security"
-#"contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security"
-#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security"
-#"contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution"
-#"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution"
+#Domain,ObjType,SourceOU,DestOU,GroupName,GroupType,Recurse
+#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security","SubTree"
+#"contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security","SubTree"
+#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security","Base"
+#"contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution","SubTree"
+#"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
 
+#Grab the CSV file from args
 param([string]$file)
 $currentdir = Get-Location
 $csvfound = $false
@@ -29,16 +30,10 @@ if ($file -or $args[0])
     $csvfile = $args[0]
     $csvfound = $true
   }
-
-  if (($csvfile -eq $null) -and ($csvfound -eq $null))
-  {
-    Write-Output "Error: No CSV file has been specified."
-    Write-Output "Usage: ./shadowGroupSync.ps1 'C:\path\to\csv' or C:\path\to\shadowGroupSync.ps1 -file 'C:\path\to\csv'"
-    Exit
-  }
 }
 
-else
+#Error, couldn't see a CSV file!
+if (($csvfile -eq $null) -and ($csvfound -eq $null))
 {
   Write-Output "Error: No CSV file has been specified."
   Write-Output "Usage: ./shadowGroupSync.ps1 'C:\path\to\csv' or C:\path\to\shadowGroupSync.ps1 -file 'C:\path\to\csv'"
@@ -51,7 +46,16 @@ $csv = Import-Csv $csvfile
 Import-Module ActiveDirectory -ErrorAction Stop
 
 #Gets AD objects from the specified OU or OUs and returns the collection.
-Function Get-SourceObjects($searchbase, $domain, $type)
+#Param1: $searchbase - The base OU DistinguishedName of to search for objects.
+#        Multiples can be specified and chained together with a semicolon.
+#        Example: "OU=Computers,DC=contoso,DC=com" or "OU=MainOffice,OU=Users,DC=contoso,DC=com;OU=OtherOffice,OU=Users,DC=contoso,DC=com"
+#Param2: $domain - The domain or server to query for source objects.
+#        Example: "contoso.com"
+#Param3: $type - The type of search to do, the built in supported types can be seen below.
+#        Example: "computer"
+#Param4: $scope - The scope of the search for objects.
+#        Example: 0 or "Base", 1 or "OneLevel", 2 or "SubTree"
+Function Get-SourceObjects($searchbase, $domain, $type, $scope)
 {
   $obj = $null
   
@@ -61,7 +65,7 @@ Function Get-SourceObjects($searchbase, $domain, $type)
   {
     foreach ($base in $bases)
     {
-      $multiobj += Get-SourceObjects $base $domain $type
+      $multiobj += Get-SourceObjects $base $domain $type $scope
     }
     return $multiobj
   }
@@ -73,9 +77,9 @@ Function Get-SourceObjects($searchbase, $domain, $type)
       #'$obj' must be a collection of AD objects with a Name and an ObjectGUID property.
       switch ($type)
       {
-        "computer" {$obj = Get-ADComputer -Filter {name -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
-        "mailuser" {$obj = Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
-        "user" {$obj = Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope 2 -server $domain -ErrorAction Stop}
+        "computer" {$obj = Get-ADComputer -Filter {name -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "mailuser" {$obj = Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "user" {$obj = Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
         default 
         {
           Write-Output "Invalid type specified"
@@ -94,6 +98,14 @@ Function Get-SourceObjects($searchbase, $domain, $type)
 }
 
 #Gets the members from the shadow group. If the group does not exist, create it.
+#Param1: $groupname - The shadowgroup name to get members from.
+#        Example: "ShadowGroup-1"
+#Param2: $domain - The domain or server to query for source objects.
+#        Example: "contoso.com"
+#Param3: $destou - The OU the shadowgroup exists in.
+#        Example: "OU=ShadowGroups,DC=contoso,DC=com"
+#Param4: $scope - The grouptype the shadowgroup should be created as (If it doesn't exist)
+#        Example: 0 (Distribution) or 1 (Security)
 Function Get-ShadowGroupMembers($groupname, $domain, $destou, $grouptype)
 {
   if (!(Get-ADGroup -Filter {SamAccountName -eq $groupname} -SearchBase $destou -Server $domain))
@@ -108,17 +120,32 @@ Function Get-ShadowGroupMembers($groupname, $domain, $destou, $grouptype)
 }
 
 #Adds the specified object to the group.
-Function Add-ShadowGroupMember($domain, $group, $memberguid)
+#Param1: $domain - The domain or server to query.
+#        Example: "contoso.com"
+#Param2: $groupname - The shadowgroup to add the member to.
+#        Example: "ShadowGroup-1"
+#Param2: $member - The member to add to the shadowgroup, can be a SAMAccountName, ObjectGUID or an AD user object.
+#        Example: "SmithJ" (SAMAccountName for John Smith)
+Function Add-ShadowGroupMember($domain, $group, $member)
 {
-  Add-ADGroupMember -Identity $group -Member $memberguid -Server $domain
+  Add-ADGroupMember -Identity $group -Member $member -Server $domain
 }
 
 #Removes the specified object from the group.
+#Param1: $domain - The domain or server to query.
+#        Example: "contoso.com"
+#Param2: $groupname - The shadowgroup to remove the member from.
+#        Example: "ShadowGroup-1"
+#Param2: $member - The member to remove from the shadowgroup, can be a SAMAccountName, ObjectGUID or an AD user object.
+#        Example: "SmithJ" (SAMAccountName for John Smith)
 Function Remove-ShadowGroupMember($domain, $group, $memberguid)
 {
   Remove-ADGroupMember -Identity $group -Member $memberguid -Server $domain -Confirm:$false
 }
 
+#Resolve the group category to be used with Get-ShadowGroupMembers, returns 1 for Security if unknown.
+#Param1: $groupcategory - The group category to be used to create the group in Get-ShadowGroupMembers
+#        Example: "Security"
 Function Check-GroupCategory($groupcategory)
 {
   switch ($groupcategory)
@@ -129,6 +156,20 @@ Function Check-GroupCategory($groupcategory)
   }
 }
 
+#Resolve the search scope to be used with Get-SourceObjects, returns 2 for SubTree if unknown.
+#Param1: $scope - The scope to be used to search for source objects in Get-SourceObjects
+#        Example: 0 or "Base", 2 or "SubTree", etc.
+Function Check-SourceScope($scope)
+{
+  switch ($scope)
+  {
+    {($_ -eq "Base") -or ($_ -eq 0)} { return 0 }
+    {($_ -eq "OneLevel") -or ($_ -eq 1)} { return 1 }
+    {($_ -eq "Subtree") -or ($_ -eq 2)} { return 2 }
+    default { return 2 }
+  }
+}
+
 #Iterate through the CSV and action each shadow group.
 foreach ($cs in $csv)
 {
@@ -136,7 +177,7 @@ foreach ($cs in $csv)
   Write-Output $cs
   
   #Populate the source and destination set for comparison.
-  $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType
+  $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.scope)
   $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Domain $cs.Destou (Check-GroupCategory $cs.GroupType)
   
   #If the group is empty, populate the group.

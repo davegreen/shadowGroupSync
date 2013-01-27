@@ -39,19 +39,20 @@ By default, PowerShell will not let you run scripts and will only work in intera
 
 Once you have downloaded the script, you will need to create the CSV file where you specify the shadow groups you want to create. Here is a sample CSV file:
 
-> Domain,ObjType,SourceOU,DestOU,GroupName,GroupType
-> "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security"
-> "contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security"
-> "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security"
-> "contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution"
-> "child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution"
+> Domain,ObjType,SourceOU,DestOU,GroupName,GroupType,Recurse
+> "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security","SubTree"
+> "contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security","SubTree"
+> "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security","Base"
+> "contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution","SubTree"
+> "child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
 
 - Domain specifies the domain to query for the source AD objects.
 - ObjType is a query type that can be specified in the script to filter for objects.
 - SourceOU is the OU (or OUs, separated by a semicolon) to query for source objects for the shadow group.
 - DestOU is the OU where you would like the shadow group to be created.
 - GroupName specifies the name of the shadow group.
-- GroupType specifies the whether a Security or Distribution group will be created. The default is Security.
+- GroupType specifies whether a Security or Distribution group will be created. The default is Security.
+- Recurse specifies how to search the SourceOU for objects. This can be '0' or "Base, '1' or "OneLevel, '2' or "SubTree" [More info](http://technet.microsoft.com/en-us/library/ee617241.aspx).
 
 You can place the CSV file anywhere on the system, as long as the script can be told where to find it.
 
