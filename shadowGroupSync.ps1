@@ -42,7 +42,9 @@ if (($csvfile -eq $null) -and ($csvfound -eq $null))
 
 $csv = Import-Csv $csvfile
 
-#For logging, Run with: powershell.exe -file "c:\path\shadowGroupSync.ps1" | tee -file ('c:\path\log\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')
+
+
+#For logging, Run with: powershell.exe -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')"
 Import-Module ActiveDirectory -ErrorAction Stop
 
 #Gets AD objects from the specified OU or OUs and returns the collection.
