@@ -173,7 +173,7 @@ foreach ($cs in $csv)
   Write-Output $cs
   
   #Populate the source and destination set for comparison.
-  $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.scope)
+  $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.Recurse)
   $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Destou (Check-GroupCategory $cs.GroupType)
   
   #If the group is empty, populate the group.
