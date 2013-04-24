@@ -27,11 +27,12 @@ Alternatively, if you wish to run this script from a Server 2008R2 member server
 
 > Add-WindowsFeature RSAT-AD-PowerShell
 
-Finally, if you are running Windows 7, the module can be installed with the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-us/download/details.aspx?id=7887). You will then need to enable it from 'Control Panel -> Programs -> Turn Windows Features On or Off'.
+Finally, if you are running Windows 7, the module can be installed with the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-us/download/details.aspx?id=7887). 
+You will then need to enable it from 'Control Panel -> Programs -> Turn Windows Features On or Off', or use the Add-WindowsFeature cmdlet as shown above..
 
 ### [Enabling scripts in PowerShell](http://technet.microsoft.com/en-us/library/hh849812.aspx)
 
-By default, PowerShell will not let you run scripts and will only work in interactive mode. In order to run the shadowGroupSync script, you will need to alter this behaviour. To do this, run PowerShell as an Administrator, then run the following command:
+By default, PowerShell will not let you run scripts and will only work in interactive mode. In order to run the shadowGroupSync script from a local drive, you will need to alter this behaviour. To do this, run PowerShell as an Administrator, then run the following command:
 
 > Set-ExecutionPolicy RemoteSigned
 
@@ -42,7 +43,7 @@ Once you have downloaded the script, you will need to create the CSV file where 
 > Domain,ObjType,SourceOU,DestOU,GroupName,GroupType,Recurse
 > "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security","SubTree"
 > "contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security","SubTree"
-> "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security","Base"
+> "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security","OneLevel"
 > "contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution","SubTree"
 > "child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
 
@@ -52,7 +53,7 @@ Once you have downloaded the script, you will need to create the CSV file where 
 - DestOU is the OU where you would like the shadow group to be created.
 - GroupName specifies the name of the shadow group.
 - GroupType specifies whether a Security or Distribution group will be created. The default is Security.
-- Recurse specifies how to search the SourceOU for objects. This can be '0' or "Base, '1' or "OneLevel, '2' or "SubTree" [More info](http://technet.microsoft.com/en-us/library/ee617241.aspx).
+- Recurse specifies how to search the SourceOU for objects. This can be '1'/"OneLevel, or '2'/"SubTree" [More info](http://technet.microsoft.com/en-us/library/ee617241.aspx).
 
 You can place the CSV file anywhere on the system, as long as the script can be told where to find it.
 
@@ -62,6 +63,7 @@ Usage
 You can run the script in a couple of ways. In most production environments, you can use a scheduled task to run the script.
 
 The following command will run the script and log the output to a specific directory.
+
 > powershell.exe -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')"
 
 If you want to run the script normally, you can call the PowerShell script either with or without the '-file' argument.
