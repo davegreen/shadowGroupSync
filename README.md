@@ -53,7 +53,7 @@ Once you have downloaded the script, you will need to create the CSV file where 
 - DestOU is the OU where you would like the shadow group to be created.
 - GroupName specifies the name of the shadow group.
 - GroupType specifies whether a Security or Distribution group will be created. The default is Security.
-- Recurse specifies how to search the SourceOU for objects. This can be '1'/"OneLevel, or '2'/"SubTree" [More info](http://technet.microsoft.com/en-us/library/ee617241.aspx).
+- Recurse specifies how to search the SourceOU for objects. This can be "OneLevel" or "SubTree" [More info](http://technet.microsoft.com/en-us/library/ee617241.aspx).
 
 You can place the CSV file anywhere on the system, as long as the script can be told where to find it.
 
