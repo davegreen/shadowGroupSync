@@ -19,22 +19,26 @@ Setting Up
 
 ### Installing the Active Directory PowerShell Module
 
-If you plan to run this script on a Server 2008R2 Domain Controller, the Active Directory PowerShell module should already be installed.
+If you plan to run this script on a Server 2008R2 or 2012 Domain Controller, the Active Directory PowerShell module should already be installed.
 
-Alternatively, if you wish to run this script from a Server 2008R2 member server, you will need to install the AD-PowerShell module first. To do this, run PowerShell as an Administrator, then run the following two commands:
+Alternatively, if you wish to run this script from a Server 2008R2 or 2012 member server, you will need to install the AD-PowerShell module first. To do this, run PowerShell as an Administrator, then run the following two commands:
 
 > Import-Module ServerManager
 
 > Add-WindowsFeature RSAT-AD-PowerShell
 
-Finally, if you are running Windows 7, the module can be installed with the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-us/download/details.aspx?id=7887). 
-You will then need to enable it from 'Control Panel -> Programs -> Turn Windows Features On or Off', or use the Add-WindowsFeature cmdlet as shown above..
+If you are running Windows 7, the module can be installed with the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-us/download/details.aspx?id=7887). 
+You will then need to enable it from 'Control Panel -> Programs -> Turn Windows Features On or Off', or use the Add-WindowsFeature cmdlet as shown above.
+
+With Windows 8, the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-gb/download/details.aspx?id=28972) just need to be installed, as the features are automatically enabled.
 
 ### [Enabling scripts in PowerShell](http://technet.microsoft.com/en-us/library/hh849812.aspx)
 
 By default, PowerShell will not let you run scripts and will only work in interactive mode. In order to run the shadowGroupSync script from a local drive, you will need to alter this behaviour. To do this, run PowerShell as an Administrator, then run the following command:
 
 > Set-ExecutionPolicy RemoteSigned
+
+This will allow scripts that are stored locally and not signed by a trusted publisher to be run.
 
 ### Creating the CSV
 
