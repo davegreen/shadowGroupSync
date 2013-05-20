@@ -12,25 +12,29 @@ This script requires the [Active Directory PowerShell module](http://technet.mic
 - Sync user or computer objects from one or more OUs to a single group.
 - Ability to filter objects included in the shadow group using the [PowerShell AD object filter](http://technet.microsoft.com/en-us/library/hh531527).
 - Ability to choose shadow group type (Security/Distribution).
-- Supports child domains.
+- Supports child domains (Not fully tested).
 
 Setting Up
 ---------------------
 
 ### Installing the Active Directory PowerShell Module
 
-If you plan to run this script on a Server 2008R2 or 2012 Domain Controller, the Active Directory PowerShell module should already be installed.
+If you plan to run this script on a Server 2008R2 or Server 2012 Domain Controller, the Active Directory PowerShell module should already be installed.
 
-Alternatively, if you wish to run this script from a Server 2008R2 or 2012 member server, you will need to install the AD-PowerShell module first. To do this, run PowerShell as an Administrator, then run the following two commands:
+Alternatively, if you wish to run this script from a Server 2008R2 or Server 2012 member server, you will need to install the AD-PowerShell module first. To do this, run PowerShell as an Administrator, then run the following commands:
 
 > Import-Module ServerManager
 
 > Add-WindowsFeature RSAT-AD-PowerShell
 
 If you are running Windows 7, the module can be installed with the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-us/download/details.aspx?id=7887). 
-You will then need to enable it from 'Control Panel -> Programs -> Turn Windows Features On or Off', or use the Add-WindowsFeature cmdlet as shown above.
+You will then need to enable it from:
 
-With Windows 8, the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-gb/download/details.aspx?id=28972) just need to be installed, as the features are automatically enabled.
+> Control Panel -> Programs -> Turn Windows Features On or Off
+
+You can also use the Add-WindowsFeature cmdlet as shown above.
+
+With Windows 8, installing the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-gb/download/details.aspx?id=28972) is enough, as all of the features are automatically enabled when the update is installed.
 
 ### [Enabling scripts in PowerShell](http://technet.microsoft.com/en-us/library/hh849812.aspx)
 
