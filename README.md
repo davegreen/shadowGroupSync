@@ -27,14 +27,14 @@ Alternatively, if you wish to run this script from a Server 2008R2 or Server 201
 
 > Add-WindowsFeature RSAT-AD-PowerShell
 
-If you are running Windows 7, the module can be installed with the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-us/download/details.aspx?id=7887). 
+If you are running Windows 7, the module can be installed with the [Microsoft Remote Server Administration Tools For Windows 7](http://www.microsoft.com/en-us/download/details.aspx?id=7887). 
 You will then need to enable it from:
 
 > Control Panel -> Programs -> Turn Windows Features On or Off
 
 You can also use the Add-WindowsFeature cmdlet as shown above.
 
-With Windows 8, installing the [Microsoft Remote Server Administration Tools](http://www.microsoft.com/en-gb/download/details.aspx?id=28972) is enough, as all of the features are automatically enabled when the update is installed.
+With Windows 8, installing the [Microsoft Remote Server Administration Tools For Windows 8](http://www.microsoft.com/en-gb/download/details.aspx?id=28972) is enough, as all of the features are automatically enabled when the update is installed.
 
 ### [Enabling scripts in PowerShell](http://technet.microsoft.com/en-us/library/hh849812.aspx)
 
