@@ -79,9 +79,11 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
       #'$obj' must be a collection of AD objects with a Name and an ObjectGUID property.
       switch ($type)
       {
-        "computer" {$obj = Get-ADComputer -Filter {name -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
-        "mailuser" {$obj = Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
-        "user" {$obj = Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "computer" {$obj = Get-ADComputer -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "computer-name-valid" {$obj = Get-ADComputer -Filter {Name -match "^[a-z]{5}-[0-9]{5}$"} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "user-mail-enabled" {$obj = Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "user-enabled" {$obj = Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "user-disabled" {$obj = Get-ADUser -Filter {Enabled -eq $false} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
         default 
         {
           Write-Output "Invalid type specified"
