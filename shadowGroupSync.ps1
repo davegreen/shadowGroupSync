@@ -42,8 +42,6 @@ if (($csvfile -eq $null) -and ($csvfound -eq $null))
 
 $csv = Import-Csv $csvfile
 
-
-
 #For logging, Run with: powershell.exe -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')"
 Import-Module ActiveDirectory -ErrorAction Stop
 
@@ -60,8 +58,8 @@ Import-Module ActiveDirectory -ErrorAction Stop
 Function Get-SourceObjects($searchbase, $domain, $type, $scope)
 {
   $obj = $null
-  
   $bases = $searchbase.Split(";")
+  
   #If the searchbase is an array of searchbases, recall the function, concatenate the results and pass back the complete set.
   if ($bases.Count -gt 1)
   {
@@ -69,8 +67,10 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
     {
       $multiobj += Get-SourceObjects $base $domain $type $scope
     }
+
     return $multiobj
   }
+
   else
   {
     Try
@@ -84,6 +84,7 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
         "user-mail-enabled" {$obj = Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
         "user-enabled" {$obj = Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
         "user-disabled" {$obj = Get-ADUser -Filter {Enabled -eq $false} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+
         default 
         {
           Write-Output "Invalid type specified"
@@ -96,7 +97,8 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
     {
       Write-Output ("Error:" + $_)
       Exit
-    } 
+    }
+
     return $obj
   }
 }
@@ -182,6 +184,7 @@ foreach ($cs in $csv)
   if ((!$groupmembers) -and ($obj))
   {
     Write-Output ("Group """ + ($cs.GroupName) + """ is empty")
+    
     foreach ($o in $obj)
     {
       Write-Output ("Adding " + $o.Name)
