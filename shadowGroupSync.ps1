@@ -1,4 +1,24 @@
-#Author: Dave Green (david.green@tookitaway.co.uk)
+<# 
+  .Synopsis
+  A PowerShell script that provides an easy way to manage Active Directory shadow groups.
+
+  .Description
+  A PowerShell script that provides an easy way to manage Active Directory shadow groups. This script requires the PowerShell Active Directory module from Microsoft.
+    
+  .Parameter File
+  The location of the shadow group file to parse.
+
+  .Example
+  .\shadowGroupSync.ps1 -File "C:\path\to\csv"
+  Run shadowGroupSync with the CSV as the source.
+        
+  .Notes
+  Name  : shadowGroupSync
+  Author: David Green
+  
+  .Link
+  http://www.tookitaway.co.uk
+#>
 
 #--CSV Format--
 
@@ -10,17 +30,17 @@
 #"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
 
 #Grab the CSV file from args
-param([string]$file)
+param([string]$File)
 $currentdir = Get-Location
 $csvfound = $false
 $csvfile = $null
 
-#If this script is called as "C:\path\to\shadowGroupSync.ps1 -file 'C:\path\to\csv'", or a relative path to the csv.
-if ($file -or $args[0])
+#If this script is called as "C:\path\to\shadowGroupSync.ps1 -File 'C:\path\to\csv'", or a relative path to the csv.
+if ($File -or $args[0])
 {
-  if (Test-Path -LiteralPath $file)
+  if (Test-Path -LiteralPath $File)
   {
-    $csvfile = $file
+    $csvfile = $File
     $csvfound = $true
   }
 
@@ -36,13 +56,13 @@ if ($file -or $args[0])
 if (($csvfile -eq $null) -and ($csvfound -eq $null))
 {
   Write-Output "Error: No CSV file has been specified."
-  Write-Output "Usage: ./shadowGroupSync.ps1 'C:\path\to\csv' or C:\path\to\shadowGroupSync.ps1 -file 'C:\path\to\csv'"
+  Write-Output "Usage: ./shadowGroupSync.ps1 'C:\path\to\csv' or C:\path\to\shadowGroupSync.ps1 -File 'C:\path\to\csv'"
   Exit
 }
 
 $csv = Import-Csv $csvfile
 
-#For logging, Run with: powershell.exe -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')"
+#For logging, Run with: powershell.exe -command "c:\path\shadowGroupSync.ps1 -File c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')"
 Import-Module ActiveDirectory -ErrorAction Stop
 
 #Gets AD objects from the specified OU or OUs and returns the collection.
