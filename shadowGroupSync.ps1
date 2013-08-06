@@ -30,7 +30,8 @@
 #"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
 
 #Grab the CSV file from args
-param([string]$File)
+param([parameter(Mandatory=$true, HelpMessage="The location of the shadowGroupSync definition CSV.")][string]$File)
+
 $currentdir = Get-Location
 $csvfound = $false
 $csvfile = $null
