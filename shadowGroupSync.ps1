@@ -182,7 +182,7 @@ Function Check-SourceScope($scope)
 #Iterate through the CSV and action each shadow group.
 foreach ($cs in $csv)
 {
-  Write-Verbose $cs
+  Write-Debug $cs
   
   #Populate the source and destination set for comparison.
   $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.Recurse)
