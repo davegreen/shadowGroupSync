@@ -30,38 +30,24 @@
 #"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
 
 #Grab the CSV file from args
-param([parameter(Mandatory=$true, HelpMessage="The location of the shadowGroupSync definition CSV.")][string]$File)
+param([parameter(Mandatory=$true,Position=1, HelpMessage="The location of the shadowGroupSync definition CSV.")][string]$File)
 
-$currentdir = Get-Location
-$csvfound = $false
-$csvfile = $null
+$csv = @()
 
-#If this script is called as "C:\path\to\shadowGroupSync.ps1 -File 'C:\path\to\csv'", or a relative path to the csv.
-if ($File -or $args[0])
+Try
 {
-  if (Test-Path -LiteralPath $File)
+  $csv = Import-Csv $File
+  if (!($csv[0].Domain -and $csv[0].ObjType -and $csv[0].SourceOU -and $csv[0].DestOU -and $csv[0].GroupName -and $csv[0].GroupType -and $csv[0].Recurse))
   {
-    $csvfile = $File
-    $csvfound = $true
-  }
-
-  #Alternatively, if the script is called as "./shadowGroupSync.ps1 'C:\path\to\csv'"
-  elseif ((Test-Path -LiteralPath $args[0]) -and ($csvfound -eq $null))
-  {
-    $csvfile = $args[0]
-    $csvfound = $true
+    Throw (New-Object System.IO.InvalidDataException "The shadowGroupSync definition CSV does not appear to be in the correct format.")
   }
 }
 
-#Error, couldn't see a CSV file!
-if (($csvfile -eq $null) -and ($csvfound -eq $null))
+Catch
 {
-  Write-Output "Error: No CSV file has been specified."
-  Write-Output "Usage: ./shadowGroupSync.ps1 'C:\path\to\csv' or C:\path\to\shadowGroupSync.ps1 -File 'C:\path\to\csv'"
+  Write-Error $_
   Exit
 }
-
-$csv = Import-Csv $csvfile
 
 #For logging, Run with: powershell.exe -command "c:\path\shadowGroupSync.ps1 -File c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')"
 Import-Module ActiveDirectory -ErrorAction Stop
