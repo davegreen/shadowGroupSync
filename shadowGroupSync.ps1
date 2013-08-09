@@ -145,9 +145,9 @@ Function Add-ShadowGroupMember($group, $member)
 #        Example: "ShadowGroup-1"
 #Param2: $member - The member to remove from the shadowgroup, can be a SAMAccountName, ObjectGUID or an AD user object.
 #        Example: "SmithJ" (SAMAccountName for John Smith)
-Function Remove-ShadowGroupMember($group, $memberguid)
+Function Remove-ShadowGroupMember($group, $member)
 {
-  Remove-ADGroupMember -Identity $group -Member $memberguid -Confirm:$false
+  Remove-ADGroupMember -Identity $group -Member $member -Confirm:$false
 }
 
 #Resolve the group category to be used with Get-ShadowGroupMembers, returns 1 for Security if unknown.
