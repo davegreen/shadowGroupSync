@@ -137,7 +137,8 @@ Function Get-ShadowGroupMembers($groupname, $destou, $grouptype)
 #        Example: "SmithJ" (SAMAccountName for John Smith)
 Function Add-ShadowGroupMember($group, $member)
 {
-  Add-ADGroupMember -Identity $group -Member $member
+  Write-Verbose "Adding $($member.Name)"
+  Add-ADGroupMember -Identity $group -Member $member.objectGUID
 }
 
 #Removes the specified object from the group.
@@ -147,7 +148,8 @@ Function Add-ShadowGroupMember($group, $member)
 #        Example: "SmithJ" (SAMAccountName for John Smith)
 Function Remove-ShadowGroupMember($group, $member)
 {
-  Remove-ADGroupMember -Identity $group -Member $member -Confirm:$false
+  Write-Verbose "Removing $($member.Name)"
+  Remove-ADGroupMember -Identity $group -Member $member.objectGUID -Confirm:$false
 }
 
 #Resolve the group category to be used with Get-ShadowGroupMembers, returns 1 for Security if unknown.
@@ -180,8 +182,7 @@ Function Check-SourceScope($scope)
 #Iterate through the CSV and action each shadow group.
 foreach ($cs in $csv)
 {
-  Write-Output ("`n--------------------------------------------------------`n")
-  Write-Output $cs
+  Write-Verbose $cs
   
   #Populate the source and destination set for comparison.
   $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.Recurse)
@@ -190,21 +191,21 @@ foreach ($cs in $csv)
   #If the group is empty, populate the group.
   if ((!$groupmembers) -and ($obj))
   {
-    Write-Output ("Group """ + ($cs.GroupName) + """ is empty")
+    Write-Verbose "$($cs.GroupName) is empty"
     
     foreach ($o in $obj)
     {
-      Write-Output ("Adding " + $o.Name)
       Add-ShadowGroupMember $cs.GroupName $o
     }
   }
   
-  #If there are no members to sync, empty the group.
+  #If there are no members in the sync source, empty the group.
   elseif (($obj -eq $null) -and ($groupmembers))
   {
+    Write-Verbose "Emptying $($cs.GroupName)"
+
     foreach ($member in $groupmembers)
     {
-      Write-Output ("Removing " + ($member.Name))
       Remove-ShadowGroupMember $cs.GroupName $member
     }
   }
@@ -216,17 +217,15 @@ foreach ($cs in $csv)
     {
       {$_.SideIndicator -eq "=>"}
       {
-        Write-Output ("Adding   " + ($_.Name))
         Add-ShadowGroupMember $cs.GroupName $_
       }
       
       {$_.SideIndicator -eq "<="} 
       {
-        Write-Output ("Removing " + ($_.Name))
         Remove-ShadowGroupMember $cs.GroupName $_
       }
     }
   }
   
-  Write-Output ("Sync for """ + ($cs.GroupName) + """ complete!`n")
+  Write-Verbose ("Sync for """ + ($cs.GroupName) + """ complete!`n")
 }
