@@ -195,7 +195,7 @@ foreach ($cs in $csv)
     foreach ($o in $obj)
     {
       Write-Output ("Adding " + $o.Name)
-      Add-ShadowGroupMember $cs.GroupName $o.objectGUID
+      Add-ShadowGroupMember $cs.GroupName $o
     }
   }
   
@@ -205,7 +205,7 @@ foreach ($cs in $csv)
     foreach ($member in $groupmembers)
     {
       Write-Output ("Removing " + ($member.Name))
-      Remove-ShadowGroupMember $cs.GroupName $member.objectGUID
+      Remove-ShadowGroupMember $cs.GroupName $member
     }
   }
   
@@ -217,13 +217,13 @@ foreach ($cs in $csv)
       {$_.SideIndicator -eq "=>"}
       {
         Write-Output ("Adding   " + ($_.Name))
-        Add-ShadowGroupMember $cs.GroupName $_.objectGUID
+        Add-ShadowGroupMember $cs.GroupName $_
       }
       
       {$_.SideIndicator -eq "<="} 
       {
         Write-Output ("Removing " + ($_.Name))
-        Remove-ShadowGroupMember $cs.GroupName $_.objectGUID
+        Remove-ShadowGroupMember $cs.GroupName $_
       }
     }
   }
