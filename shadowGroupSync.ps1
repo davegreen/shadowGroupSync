@@ -94,7 +94,7 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
 
         default 
         {
-          Write-Output "Invalid type specified"
+          Write-Error "Invalid type specified"
           Exit
         }
       }
@@ -102,7 +102,7 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
   
     Catch
     {
-      Write-Output ("Error:" + $_)
+      Write-Error $_
       Exit
     }
 
