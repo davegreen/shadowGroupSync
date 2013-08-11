@@ -159,12 +159,14 @@ Function Remove-ShadowGroupMember($group, $member)
 #        Example: "Security"
 Function Check-GroupCategory($groupcategory)
 {
-  switch ($groupcategory)
+  $category = switch ($groupcategory)
   {
-    "Distribution" { return 0 }
-    "Security" { return 1 }
-    default { return 1 }
+    "Distribution" {0}
+    "Security" {1}
+    default {1}
   }
+
+  return $category
 }
 
 #Resolve the search scope to be used with Get-SourceObjects, returns 2 for SubTree if unknown.
@@ -172,13 +174,15 @@ Function Check-GroupCategory($groupcategory)
 #        Example: 0 or "Base", 2 or "SubTree", etc.
 Function Check-SourceScope($scope)
 {
-  switch ($scope)
+  $s = switch ($scope)
   {
-    {($_ -eq "Base") -or ($_ -eq 0)} { return 0 }
-    {($_ -eq "OneLevel") -or ($_ -eq 1)} { return 1 }
-    {($_ -eq "Subtree") -or ($_ -eq 2)} { return 2 }
-    default { return 2 }
+    {($_ -eq "Base") -or ($_ -eq 0)} {0}
+    {($_ -eq "OneLevel") -or ($_ -eq 1)} {1}
+    {($_ -eq "Subtree") -or ($_ -eq 2)} {2}
+    default {2}
   }
+
+  return $s
 }
 
 #Iterate through the CSV and action each shadow group.
