@@ -21,7 +21,6 @@
 #>
 
 #--CSV Format--
-
 #Domain,ObjType,SourceOU,DestOU,GroupName,GroupType,Recurse
 #"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security","SubTree"
 #"contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security","SubTree"
@@ -30,13 +29,16 @@
 #"child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
 
 #Grab the CSV file from args
-param([parameter(Mandatory=$true,Position=1, HelpMessage="The location of the shadowGroupSync definition CSV.")][string]$File)
+param(
+  [parameter(Mandatory=$true,Position=1, HelpMessage="The location of the shadowGroupSync definition CSV.")][string]$File
+)
 
 $csv = @()
 
 Try
 {
   $csv = Import-Csv $File
+  
   if (!($csv[0].Domain -and $csv[0].ObjType -and $csv[0].SourceOU -and $csv[0].DestOU -and $csv[0].GroupName -and $csv[0].GroupType -and $csv[0].Recurse))
   {
     Throw (New-Object System.IO.InvalidDataException "The shadowGroupSync definition CSV does not appear to be in the correct format.")
@@ -84,13 +86,13 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
     {
       #You can add you own types here and reference them in the csv.
       #'$obj' must be a collection of AD objects with a Name and an ObjectGUID property.
-      switch ($type)
+      $obj = switch ($type)
       {
-        "computer" {$obj = Get-ADComputer -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
-        "computer-name-valid" {$obj = Get-ADComputer -Filter {Name -match "^[a-z]{5}-[0-9]{5}$"} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
-        "user-mail-enabled" {$obj = Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
-        "user-enabled" {$obj = Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
-        "user-disabled" {$obj = Get-ADUser -Filter {Enabled -eq $false} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "computer" {Get-ADComputer -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "computer-name-valid" {Get-ADComputer -Filter {Name -match "^[a-z]{5}-[0-9]{5}$"} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "user-mail-enabled" {Get-ADUser -Filter {Mail -like '*' -and Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "user-enabled" {Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
+        "user-disabled" {Get-ADUser -Filter {Enabled -eq $false} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
 
         default 
         {
