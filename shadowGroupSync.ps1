@@ -101,7 +101,12 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
         }
       }
     }
-  
+    
+    Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
+    {
+      Write-Warning "The OU $searchbase does not appear to exist."
+    }
+
     Catch
     {
       Write-Error $_
