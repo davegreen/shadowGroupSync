@@ -144,8 +144,17 @@ Function Get-ShadowGroupMembers($groupname, $destou, $grouptype)
 #        Example: "SmithJ" (SAMAccountName for John Smith)
 Function Add-ShadowGroupMember($group, $member)
 {
-  Write-Verbose "Adding $($member.Name)"
-  Add-ADGroupMember -Identity $group -Member $member.objectGUID
+  Try
+  {
+    Write-Verbose "Adding $($member.Name)"
+    Add-ADGroupMember -Identity $group -Member $member.objectGUID -ErrorAction Stop
+  }
+
+  Catch
+  {
+    Write-Warning "Failed to add $member to group $group"
+    Write-Error $_
+  }
 }
 
 #Removes the specified object from the group.
@@ -155,8 +164,17 @@ Function Add-ShadowGroupMember($group, $member)
 #        Example: "SmithJ" (SAMAccountName for John Smith)
 Function Remove-ShadowGroupMember($group, $member)
 {
-  Write-Verbose "Removing $($member.Name)"
-  Remove-ADGroupMember -Identity $group -Member $member.objectGUID -Confirm:$false
+  Try
+  {
+    Write-Verbose "Removing $($member.Name)"
+    Remove-ADGroupMember -Identity $group -Member $member.objectGUID -Confirm:$false -ErrorAction Stop
+  }
+
+  Catch
+  {
+    Write-Warning "Failed to remove $member from group $group"
+    Write-Error $_
+  }
 }
 
 #Resolve the group category to be used with Get-ShadowGroupMembers, returns 1 for Security if unknown.
