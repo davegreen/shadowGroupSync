@@ -40,7 +40,7 @@ Try
 {
   $csv = Import-Csv $File
   
-  if (!($csv[0].Domain -and $csv[0].ObjType -and $csv[0].SourceOU -and $csv[0].DestOU -and $csv[0].GroupName -and $csv[0].GroupType -and $csv[0].Recurse))
+  if (!($csv.Domain -and $csv.ObjType -and $csv.SourceOU -and $csv.DestOU -and $csv.GroupName -and $csv.GroupType -and $csv.Recurse))
   {
     Throw (New-Object System.IO.InvalidDataException "The shadowGroupSync definition CSV does not appear to be in the correct format.")
   }
