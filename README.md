@@ -53,10 +53,10 @@ Once you have downloaded the script, you will need to create the CSV file where 
 > "contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security","SubTree"
 > "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security","OneLevel"
 > "contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution","SubTree"
-> "child.contoso.com","mailuser","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
+> "child.contoso.com","user-mail-enabled","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
 
 - Domain specifies the domain to query for the source AD objects.
-- ObjType is a query type that can be specified in the script to filter for objects.
+- ObjType is a query type that can be specified in the script to filter for objects. This can be easily extended in the script.
 - SourceOU is the OU (or OUs, separated by a semicolon) to query for source objects for the shadow group.
 - DestOU is the OU where you would like the shadow group to be created.
 - GroupName specifies the name of the shadow group.
