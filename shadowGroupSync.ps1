@@ -34,23 +34,7 @@ param(
   [parameter(Mandatory=$true,Position=1, HelpMessage="The location of the shadowGroupSync definition CSV.")][string]$File
 )
 
-$csv = @()
-
-Try
-{
-  $csv = Import-Csv $File
-  
-  if (!($csv.Domain -and $csv.ObjType -and $csv.SourceOU -and $csv.DestOU -and $csv.GroupName -and $csv.GroupType -and $csv.Recurse))
-  {
-    Throw (New-Object System.IO.InvalidDataException "The shadowGroupSync definition CSV does not appear to be in the correct format.")
-  }
-}
-
-Catch
-{
-  Write-Error $_
-  Exit
-}
+$csv = Import-Csv $File
 
 #For logging, Run with: powershell.exe -command "c:\path\shadowGroupSync.ps1 -File c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')"
 Import-Module ActiveDirectory -ErrorAction Stop
