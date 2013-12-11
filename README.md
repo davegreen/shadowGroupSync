@@ -93,3 +93,4 @@ Thanks
 
 - i3laze - Updated the script to deal with syncing mail-enabled users and child domains.
 - Dmitry - Submitted a correction when using the script to generate groups for [Fine-Grained Password Policies](http://technet.microsoft.com/en-us/library/cc770394).
+- Alex - Highlighted some bugs that needed fixing.
