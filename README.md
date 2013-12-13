@@ -1,4 +1,4 @@
-Readme - shadowGroupSync
+shadowGroupSync
 ====================
 
 Description
@@ -12,7 +12,6 @@ This script requires the [PowerShell Active Directory module](http://technet.mic
 - Sync user or computer objects from one or more OUs to a single group.
 - Ability to filter objects included in the shadow group using the [PowerShell Active Directory Filter](http://technet.microsoft.com/en-us/library/hh531527).
 - Ability to choose shadow group type (Security/Distribution).
-- Supports child domains (Not fully tested).
 
 Setting Up
 ---------------------
