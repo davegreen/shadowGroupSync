@@ -193,11 +193,45 @@ Function Check-SourceScope($scope)
   return $s
 }
 
+#Confirm that the destination OU and Group can be created in the domain.
+#Param1: $destou - The OU the shadowgroup should exist in.
+#        Example: "OU=ShadowGroups,DC=contoso,DC=com"
+#Param2: $groupname - The shadowgroup name to put members in.
+#        Example: "ShadowGroup-1"
+Function Confirm-Destination($destou, $groupname) {
+  #Check that the destination OU exists, otherwise we won't be able to create the shadow group at all
+  try {
+    Get-ADOrganizationalUnit -Identity $destou -ErrorAction Continue | Out-Null
+  } catch {
+    if($_.Exception.GetType().Name -eq "ADIdentityNotFoundException") {
+      Write-Error "Skipping sync of $groupname, destination OU does not exist: $destou"
+      return $false
+    } else {
+        throw
+    }
+  }
+
+  #Check that a group with the same SAM Account Name as our destination group does not exist elsewhere in AD - this attribute must be unique within a domain
+  $adGroup = Get-ADGroup -Filter {SamAccountName -eq $groupname} -ErrorAction Continue
+
+  #The RegEx here strips off the initial CN=.... in distinguished name to compare OUs correctly - must be a better way to do this
+  if($adGroup -and ([Regex]::Replace($adGroup.DistinguishedName,"^CN=[^,]+,","") -ne $destou)) {
+    Write-Error "Skipping sync of $groupname, a group with the same SAM Account Name already exists in a different part of the hierarchy: $($adGroup.DistinguishedName)"
+    return $false
+  }
+
+  return $true
+}
+
 #Iterate through the CSV and action each shadow group.
 foreach ($cs in $csv)
 {
   Write-Debug $cs
   
+  if(-not (Confirm-Destination $cs.DestOU $cs.GroupName)) {
+    continue
+  }
+
   #Populate the source and destination set for comparison.
   $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.Recurse)
   $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Destou (Check-GroupCategory $cs.GroupType)
