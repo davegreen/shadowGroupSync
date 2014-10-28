@@ -275,5 +275,5 @@ foreach ($cs in $csv)
     }
   }
   
-  Write-Verbose "$($cs.GroupName) sync complete."
+  Write "$($cs.GroupName) sync complete."
 }
