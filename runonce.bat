@@ -1,0 +1,1 @@
+powershell.exe -NoProfile -ExecutionPolicy Bypass -command "%~dp0\shadowGroupSync.ps1 -file %~dp0\shadow-groups.csv" 2>&1 > %~dp0\shadowGroupSync.log"
