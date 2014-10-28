@@ -71,7 +71,7 @@ You can run the script in a couple of ways. In most production environments, you
 
 The following command will run the script and log the output to a specific directory.
 
-> powershell.exe -NoProfile -ExecutionPolicy Bypass -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format yyyy.M.d-HH.mm) + '.log')"
+> powershell.exe -NoProfile -ExecutionPolicy Bypass -command "%~dp0\shadowGroupSync.ps1 -file %~dp0\shadow-groups.csv" 2>&1 > %~dp0\shadowGroupSync.log"
 
 If you want to run the script normally, you can call the PowerShell script either with or without the '-file' argument.
 
