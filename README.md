@@ -91,11 +91,7 @@ If running as a scheduled task, it is recommended to use a service account with 
   * Also give `List, Read, Write, Delete` permission to `Descendant Groups`
 4. Add Group Policy to relevant servers/computers to allow `Run as` permissions
   * Under `Computer Configuration -> Windows Settings -> Security Settings -> Local Policies -> User Rights Assignment`:
-<<<<<<< .merge_file_a21852
   * Configure `Logon as a batch job` and `Logon as a service` to include `Service Accounts`
-=======
-  * Configure `Logon as a batch job` and 'Logon as a service' to include `Service Accounts`
->>>>>>> .merge_file_a19880
   * It is also recommended to include Administrators and Backup Operators
 5. Create a scheduled task on a server or computer
   * `Change User or Group` to service acconut
