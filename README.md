@@ -18,9 +18,9 @@ Setting Up
 
 ### Installing the Active Directory PowerShell Module
 
-If you plan to run this script on a Server 2008R2 or Server 2012 Domain Controller, the Active Directory PowerShell module should already be installed.
+If you plan to run this script on a Server 2008 R2 or Server 2012 Domain Controller, the Active Directory PowerShell module should already be installed.
 
-Alternatively, if you wish to run this script from a Server 2008R2 or Server 2012 member server, you will need to install the AD-PowerShell module first. To do this, run PowerShell as an Administrator, then run the following commands:
+Alternatively, if you wish to run this script from a Server 2008 R2 or Server 2012 member server, you will need to install the ActiveDirectory PowerShell module first. To do this, run PowerShell as an Administrator, then run the following commands:
 
 > Import-Module ServerManager
 
