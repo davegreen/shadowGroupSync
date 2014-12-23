@@ -71,7 +71,11 @@ You can run the script in a couple of ways. In most production environments, you
 
 The following command will run the script and log the output to a specific directory.
 
+PowerShell 3 (Windows Server 2012 and later).
 > powershell.exe -NoProfile -ExecutionPolicy Bypass -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format yyyy.M.d-HH.mm) + '.log')"
+
+PowerShell 2 (Windows Server 2008 R2)
+> powershell.exe -NoProfile -ExecutionPolicy Bypass -command ""c:\path\shadowGroupSync.ps1 -verbose -file "c:\path\shadow-groups.csv" 2>&1 > "c:\path\shadowGroupSync.log"
 
 If you want to run the script normally, you can call the PowerShell script either with or without the '-file' argument.
 
@@ -93,3 +97,4 @@ Thanks
 - i3laze - Updated the script to deal with syncing mail-enabled users and child domains.
 - Dmitry - Submitted a correction when using the script to generate groups for [Fine-Grained Password Policies](http://technet.microsoft.com/en-us/library/cc770394).
 - Alex - Highlighted some bugs that needed fixing.
+- inarius - Highlighted some compatibility issues.
