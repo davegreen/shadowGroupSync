@@ -69,6 +69,14 @@ Usage
 
 You can run the script in a couple of ways. In most production environments, you can use a scheduled task to run the script.
 
+### Standard
+If you want to run the script normally, you can call the PowerShell script either with or without the '-file' argument.
+
+> ./shadowGroupSync.ps1 'C:\path\to\csv'
+
+> ./shadowGroupSync.ps1 -file 'C:\path\to\csv'
+
+### With Logging
 The following command will run the script and log the output to a specific directory.
 
 PowerShell 3 (Windows Server 2012 and later).
@@ -77,11 +85,28 @@ PowerShell 3 (Windows Server 2012 and later).
 PowerShell 2 (Windows Server 2008 R2)
 > powershell.exe -NoProfile -ExecutionPolicy Bypass -command ""c:\path\shadowGroupSync.ps1 -verbose -file "c:\path\shadow-groups.csv" 2>&1 > "c:\path\shadowGroupSync.log"
 
-If you want to run the script normally, you can call the PowerShell script either with or without the '-file' argument.
+### Scheduled Task
 
-> ./shadowGroupSync.ps1 'C:\path\to\csv'
+If running as a scheduled task, it is recommended to use a service account with limited privleges to the domain. 
+The following steps should produce the desired results:
 
-> ./shadowGroupSync.ps1 -file 'C:\path\to\csv'
+1. Create a service account (i.e. `svcShadowGroups`)
+  * Set a secure password that does not expire
+2. Add the account to a `Service Accounts` security group
+3. Add the account to a `Group Operators` security group
+  * Give this group `Create/Delete Groups` permission to desired areas
+  * Also give `List, Read, Write, Delete` permission to `Descendant Groups`
+4. Add Group Policy to relevant servers/computers to allow `Run as` permissions
+  * Under `Computer Configuration -> Windows Settings -> Security Settings -> Local Policies -> User Rights Assignment`:
+  * Configure `Logon as a batch job` and 'Logon as a service' to include `Service Accounts`
+  * It is also recommended to include Administrators and Backup Operators
+5. Create a scheduled task on a server or computer
+  * `Change User or Group` to service acconut
+  * Run whether the user is logged on or not
+  * Set triggers for desired schedule
+  * Create an action to call script
+
+It may be easiest to put the call to the script in a batch file and call the batch file from the scheduled task, as the task scheduler GUI doesn't do too well with PowerShell scripts.
 
 ### Note
 If you are using this script with child domains, you may need to change the GroupScope of created shadow groups to Universal.
