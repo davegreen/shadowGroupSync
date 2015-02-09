@@ -1,26 +1,27 @@
-shadowGroupSync
+shadowGroupSync Module
 ====================
 
 Description
 ---------------------
 
-A PowerShell script that provides an easy way to manage Active Directory shadow groups. 
-This script requires the [PowerShell Active Directory module](http://technet.microsoft.com/en-us/library/ee617195.aspx) from Microsoft.
+A PowerShell module that provides an easy way to manage Active Directory shadow groups. 
+This Module requires the [PowerShell Active Directory module](http://technet.microsoft.com/en-us/library/ee617195.aspx) from Microsoft.
 
 ### Features
 
 - Sync user or computer objects from one or more OUs to a single group.
 - Ability to filter objects included in the shadow group using the [PowerShell Active Directory Filter](http://technet.microsoft.com/en-us/library/hh531527).
 - Ability to choose shadow group type (Security/Distribution).
+- All the data required to manage and maintain the shadow groups is contained in the groups created by the module.
 
 Setting Up
 ---------------------
 
 ### Installing the Active Directory PowerShell Module
 
-If you plan to run this script on a Server 2008 R2 or Server 2012 Domain Controller, the Active Directory PowerShell module should already be installed.
+If you plan to run this module on a Server 2008 R2 or later Domain Controller, the Active Directory PowerShell module should already be installed.
 
-Alternatively, if you wish to run this script from a Server 2008 R2 or Server 2012 member server, you will need to install the ActiveDirectory PowerShell module first. To do this, run PowerShell as an Administrator, then run the following commands:
+Alternatively, if you wish to run this module from a Server 2008 R2 or Server 2012 member server, you will need to install the ActiveDirectory PowerShell module first. To do this, run PowerShell as an Administrator, then run the following commands:
 
 > Import-Module ServerManager
 
@@ -33,26 +34,20 @@ You will then need to enable it from:
 
 You can also use the Add-WindowsFeature cmdlet as shown above.
 
-With Windows 8, installing the [Microsoft Remote Server Administration Tools For Windows 8](http://www.microsoft.com/en-gb/download/details.aspx?id=28972) is enough, as all of the features are automatically enabled when the update is installed.
+With the Microsoft Remote Server Administration Tools for [Windows 8](http://www.microsoft.com/en-gb/download/details.aspx?id=28972), or [Windows 8.1](http://www.microsoft.com/en-gb/download/details.aspx?id=39296) installing the package is enough, as all of the features are automatically enabled when the update is installed.
 
 ### [Enabling scripts in PowerShell](http://technet.microsoft.com/en-us/library/hh849812.aspx)
 
-By default, PowerShell will not let you run scripts and will only work in interactive mode. In order to run the shadowGroupSync script from a local drive, you will need to alter this behaviour. To do this, run PowerShell as an Administrator, then run the following command:
+By default, PowerShell will not let you run scripts and will only work in interactive mode. In order to run the shadowGroupSync module from a local drive, you will need to alter this behaviour. To do this, run PowerShell as an Administrator, then run the following command:
 
 > Set-ExecutionPolicy RemoteSigned
 
-This will allow scripts that are stored locally and not signed by a trusted publisher to be run.
+This will allow scripts that are stored locally and not signed by a trusted publisher to be run, scripts stored remotely will still require signing to be run.
 
-### Creating the CSV
+Usage
+---------------------
 
-Once you have downloaded the script, you will need to create the CSV file where you specify the shadow groups you want to create. Here is a sample CSV file:
-
-> Domain,ObjType,SourceOU,DestOU,GroupName,GroupType,Recurse
-> "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security","SubTree"
-> "contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security","SubTree"
-> "contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security","OneLevel"
-> "contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution","SubTree"
-> "child.contoso.com","user-mail-enabled","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
+### Creating a ShadowGroup
 
 - Domain specifies the domain to query for the source AD objects.
 - ObjType is a query type that can be specified in the script to filter for objects. This can be easily extended in the script.
@@ -62,32 +57,19 @@ Once you have downloaded the script, you will need to create the CSV file where 
 - GroupType specifies whether a Security or Distribution group will be created. The default is Security.
 - Recurse specifies how to search the SourceOU for objects. [This can be "OneLevel" or "SubTree"](http://technet.microsoft.com/en-us/library/ee617241.aspx).
 
-You can place the CSV file anywhere on the system, as long as the script can be told where to find it.
-
-Usage
----------------------
-
-You can run the script in a couple of ways. In most production environments, you can use a scheduled task to run the script.
-
-### Standard
-If you want to run the script normally, you can call the PowerShell script either with or without the '-file' argument.
-
-> ./shadowGroupSync.ps1 'C:\path\to\csv'
-
-> ./shadowGroupSync.ps1 -file 'C:\path\to\csv'
-
 ### With Logging
+
 The following command will run the script and log the output to a specific directory.
 
 PowerShell 3 (Windows Server 2012 and later).
-> powershell.exe -NoProfile -ExecutionPolicy Bypass -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format yyyy.M.d-HH.mm) + '.log')"
+> powershell.exe -NoProfile -ExecutionPolicy Bypass -command "Update-ShadowGroup | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format yyyy.M.d-HH.mm) + '.log')"
 
 PowerShell 2 (Windows Server 2008 R2)
-> powershell.exe -NoProfile -ExecutionPolicy Bypass -command ""c:\path\shadowGroupSync.ps1 -verbose -file "c:\path\shadow-groups.csv" 2>&1 > "c:\path\shadowGroupSync.log"
+> powershell.exe -NoProfile -ExecutionPolicy Bypass -command ""Update-ShadowGroup" 2>&1 > "c:\path\shadowGroupSync.log"
 
 ### Scheduled Task
 
-If running as a scheduled task, it is recommended to use a service account with limited privleges to the domain. 
+If running as a scheduled task, it is recommended to use a service account with limited privileges to the domain. 
 The following steps should produce the desired results:
 
 1. Create a service account (i.e. `svcShadowGroups`)
@@ -109,6 +91,7 @@ The following steps should produce the desired results:
 It may be easiest to put the call to the script in a batch file and call the batch file from the scheduled task, as the task scheduler GUI doesn't do too well with PowerShell scripts.
 
 ### Note
+
 If you are using this script with child domains, you may need to change the GroupScope of created shadow groups to Universal.
 
 Contact
@@ -118,6 +101,8 @@ For help, feedback, suggestions or bugfixes please check out [http://tookitaway.
 
 Thanks
 ---------------------
+
+### ShadowGroupSync Script
 
 - i3laze - Updated the script to deal with syncing mail-enabled users and child domains.
 - Dmitry - Submitted a correction when using the script to generate groups for [Fine-Grained Password Policies](http://technet.microsoft.com/en-us/library/cc770394).
