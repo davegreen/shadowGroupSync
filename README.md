@@ -1,4 +1,4 @@
-shadowGroupSync Module
+shadowGroupSync Module - IN PROGRESS AND UNTESTED
 ====================
 
 Description
