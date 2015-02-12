@@ -13,7 +13,9 @@ Function Remove-ShadowGroup
 	
 	<#
 
-	.SYNOPSIS
+	.SYNOPSIS 
+	
+	Removes an Active Directory shadow group.
 	
 	.DESCRIPTION
 	
@@ -28,12 +30,13 @@ Function Remove-ShadowGroup
 	.NOTES
 
     Name  : Remove-ShadowGroup
-    Author: David Green
-	
+    Author: David Green (http://www.tookitaway.co.uk/, https://github.com/davegreen/shadowGroupSync.git)
+    
 	.LINK
-
-    http://www.tookitaway.co.uk/
-    https://github.com/davegreen/shadowGroupSync.git
 	
+    New-ShadowGroup
+    Get-ShadowGroup
+    Update-ShadowGroup
+    
 	#>
 }
