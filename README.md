@@ -83,7 +83,7 @@ PowerShell 3 (Windows Server 2012 and later).
 > powershell.exe -NoProfile -ExecutionPolicy Bypass -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format yyyy.M.d-HH.mm) + '.log')"
 
 PowerShell 2 (Windows Server 2008 R2)
-> powershell.exe -NoProfile -ExecutionPolicy Bypass -command ""c:\path\shadowGroupSync.ps1 -verbose -file "c:\path\shadow-groups.csv" 2>&1 > "c:\path\shadowGroupSync.log"
+> powershell.exe -NoProfile -ExecutionPolicy Bypass -command ""c:\path\shadowGroupSync.ps1 -verbose -file "c:\path\ShadowGroups.csv" 2>&1 > "c:\path\shadowGroupSync.log"
 
 ### Scheduled Task
 
