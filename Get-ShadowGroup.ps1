@@ -56,12 +56,12 @@ Function Get-ShadowGroup
 	
 	.NOTES
 
-    Name  : New-ShadowGroup
+    Name  : Get-ShadowGroup
     Author: David Green (http://www.tookitaway.co.uk/, https://github.com/davegreen/shadowGroupSync.git)
     
 	.LINK
 	
-    Get-ShadowGroup
+    New-ShadowGroup
     Update-ShadowGroup
     Remove-ShadowGroup
     
