@@ -198,20 +198,23 @@ Function Check-SourceScope($scope)
 #        Example: "OU=ShadowGroups,DC=contoso,DC=com"
 #Param2: $groupname - The shadowgroup name to put members in.
 #        Example: "ShadowGroup-1"
-Function Confirm-Destination($destou, $groupname) {
+Function Confirm-Destination($destou, $groupname) 
+{
   #Check that the destination OU exists, otherwise we won't be able to create the shadow group at all
-  Try 
+  Try
   {
     Get-ADOrganizationalUnit -Identity $destou -ErrorAction Continue | Out-Null
-  } 
-  Catch 
+  }
+  
+  Catch
   {
-    if ($_.Exception.GetType().Name -eq "ADIdentityNotFoundException") 
+    if ($_.Exception.GetType().Name -eq "ADIdentityNotFoundException")
     {
       Write-Error "Skipping sync of $groupname, destination OU does not exist: $destou"
       return $false
-    } 
-    else 
+    }
+    
+    else
     {
       throw
     }
@@ -221,7 +224,7 @@ Function Confirm-Destination($destou, $groupname) {
   $adGroup = Get-ADGroup -Filter {SamAccountName -eq $groupname} -ErrorAction Continue
 
   #If group already exists ensure it's in the expected OU
-  if($adGroup -and (([string]([ADSI]"LDAP://$adgroup").PSBase.Parent.distinguishedName) -ne $destou)) 
+  if($adGroup -and (([string]([ADSI]"LDAP://$adgroup").PSBase.Parent.distinguishedName) -ne $destou))
   {
     Write-Error "Skipping sync of $groupname, a group with the same SAM Account Name already exists in a different part of the hierarchy: $($adGroup.DistinguishedName)"
     return $false
@@ -235,7 +238,7 @@ foreach ($cs in $csv)
 {
   Write-Debug $cs
   
-  if(!(Confirm-Destination $cs.DestOU $cs.GroupName))
+  if (!(Confirm-Destination $cs.DestOU $cs.GroupName))
   {
     continue
   }
