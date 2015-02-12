@@ -15,6 +15,8 @@ Function Update-ShadowGroup
 
 	.SYNOPSIS
 	
+	Updates the membership of one or more Active Directory shadowgroups.
+	
 	.DESCRIPTION
 	
 	.PARAMETER  <Parameter-Name>
@@ -28,12 +30,13 @@ Function Update-ShadowGroup
 	.NOTES
 
     Name  : Update-ShadowGroup
-    Author: David Green
-	
+    Author: David Green (http://www.tookitaway.co.uk/, https://github.com/davegreen/shadowGroupSync.git)
+    
 	.LINK
-
-    http://www.tookitaway.co.uk/
-    https://github.com/davegreen/shadowGroupSync.git
 	
+    New-ShadowGroup
+    Get-ShadowGroup
+    Remove-ShadowGroup
+    
 	#>
 }
