@@ -1,21 +1,21 @@
-<# 
+<#
   .Synopsis
   A PowerShell script that provides an easy way to manage Active Directory shadow groups.
 
   .Description
   A PowerShell script that provides an easy way to manage Active Directory shadow groups. This script requires the PowerShell Active Directory module from Microsoft.
-    
+
   .Parameter File
   The location of the shadow group file to parse.
 
   .Example
   .\shadowGroupSync.ps1 -File "C:\path\to\csv"
   Run shadowGroupSync with the CSV as the source.
-        
+
   .Notes
   Name  : shadowGroupSync
   Author: David Green
-  
+
   .Link
   http://www.tookitaway.co.uk
   https://github.com/davegreen/shadowGroupSync.git
@@ -53,7 +53,7 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
 {
   $obj = $null
   $bases = $searchbase.Split(";")
-  
+
   #If the searchbase is an array of searchbases, recall the function, concatenate the results and pass back the complete set.
   if ($bases.Count -gt 1)
   {
@@ -79,14 +79,14 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope)
         {($_ -eq "user") -or ($_ -eq "user-enabled")} {Get-ADUser -Filter {Enabled -eq $true} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
         "user-disabled" {Get-ADUser -Filter {Enabled -eq $false} -SearchBase $searchbase -SearchScope $scope -server $domain -ErrorAction Stop}
 
-        default 
+        default
         {
           Write-Error "Invalid type specified"
           Exit
         }
       }
     }
-    
+
     Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
     {
       Write-Warning "The OU $searchbase does not appear to exist."
@@ -117,7 +117,7 @@ Function Get-ShadowGroupMembers($groupname, $destou, $grouptype)
     #If you are using this script with child domains, it may need to be set to Universal.
     New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Groupcategory $grouptype -GroupScope Global
   }
-  
+
   $groupmembers = Get-ADGroupMember -Identity $groupname
   return $groupmembers
 }
@@ -198,14 +198,14 @@ Function Check-SourceScope($scope)
 #        Example: "OU=ShadowGroups,DC=contoso,DC=com"
 #Param2: $groupname - The shadowgroup name to put members in.
 #        Example: "ShadowGroup-1"
-Function Confirm-Destination($destou, $groupname) 
+Function Confirm-Destination($destou, $groupname)
 {
   #Check that the destination OU exists, otherwise we won't be able to create the shadow group at all
   Try
   {
     Get-ADOrganizationalUnit -Identity $destou -ErrorAction Continue | Out-Null
   }
-  
+
   Catch
   {
     if ($_.Exception.GetType().Name -eq "ADIdentityNotFoundException")
@@ -213,7 +213,7 @@ Function Confirm-Destination($destou, $groupname)
       Write-Error "Skipping sync of $groupname, destination OU does not exist: $destou"
       return $false
     }
-    
+
     else
     {
       throw
@@ -237,7 +237,7 @@ Function Confirm-Destination($destou, $groupname)
 foreach ($cs in $csv)
 {
   Write-Debug $cs
-  
+
   if (!(Confirm-Destination $cs.DestOU $cs.GroupName))
   {
     continue
@@ -246,18 +246,18 @@ foreach ($cs in $csv)
   #Populate the source and destination set for comparison.
   $obj = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.Recurse)
   $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Destou (Check-GroupCategory $cs.GroupType)
-  
+
   #If the group is empty, populate the group.
   if ((!$groupmembers) -and ($obj))
   {
     Write-Verbose "$($cs.GroupName) is empty"
-    
+
     foreach ($o in $obj)
     {
       Add-ShadowGroupMember $cs.GroupName $o
     }
   }
-  
+
   #If there are no members in the sync source, empty the group.
   elseif (($obj -eq $null) -and ($groupmembers))
   {
@@ -268,7 +268,7 @@ foreach ($cs in $csv)
       Remove-ShadowGroupMember $cs.GroupName $member
     }
   }
-  
+
   #If the group has members, get the group members to mirror the OU contents.
   elseif (($groupmembers) -and ($obj))
   {
@@ -278,13 +278,13 @@ foreach ($cs in $csv)
       {
         Add-ShadowGroupMember $cs.GroupName $_
       }
-      
-      {$_.SideIndicator -eq "<="} 
+
+      {$_.SideIndicator -eq "<="}
       {
         Remove-ShadowGroupMember $cs.GroupName $_
       }
     }
   }
-  
+
   Write-Verbose "$($cs.GroupName) sync complete."
 }
