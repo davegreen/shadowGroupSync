@@ -61,7 +61,7 @@ Function New-ShadowGroup
     
 	.LINK
 	
-    New-ShadowGroup
+    Get-ShadowGroup
     Update-ShadowGroup
     Remove-ShadowGroup
     
