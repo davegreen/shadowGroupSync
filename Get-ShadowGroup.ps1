@@ -1,8 +1,8 @@
 Function Get-ShadowGroup
 {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = "Filter")]
 	param (
-		[parameter(ParameterSetName ="Identity", Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+		[parameter(ParameterSetName ="Identity", Mandatory=$false, ValueFromPipeline=$true)]
 		[Microsoft.ActiveDirectory.Management.ADGroup]$Identity,
 		[parameter(ParameterSetName = "Filter", Mandatory=$true)]
 		[string]$Filter,
@@ -14,7 +14,10 @@ Function Get-ShadowGroup
 		[string]$Properties
 	)
 
-	BEGIN{}
+    BEGIN
+    {
+        $Output = @()
+    }
 
 	PROCESS
 	{
@@ -24,12 +27,12 @@ Function Get-ShadowGroup
 		{
 			if (!$Properties)
 			{
-				$ADGroup = Get-ADGroup -Identity $Identity
+				$ADGroup = Get-ADGroup $Identity
 			}
 
 			else
 			{
-				$ADGroup = Get-ADGroup -Identity $Identity -Properties $Properties
+				$ADGroup = Get-ADGroup $Identity -Properties $Properties
 			}
 		}
 
@@ -45,12 +48,15 @@ Function Get-ShadowGroup
 				$ADGroup = Get-ADGroup -Filter $Filter -SearchBase $SearchBase -Properties $Properties
 			}
 		}
-
-		Write-Output $ADGroup | Where-Object {$_.Name -like "$Prefix*"}
+        
+        $Output += $ADGroup | Where-Object {$_.Name -like "$Prefix*"}
 	}
 
-	END{}
-	
+    END
+    {
+        Write-Output $Output
+    }
+    
 	<#
 
 	.SYNOPSIS
