@@ -51,6 +51,7 @@ Import-Module ActiveDirectory -ErrorAction Stop
 #        Example: 0 or "Base", 1 or "OneLevel", 2 or "SubTree"
 Function Get-SourceObjects($searchbase, $domain, $type, $scope)
 {
+  $multiobj = @()
   $obj = $null
   $bases = $searchbase.Split(";")
 
