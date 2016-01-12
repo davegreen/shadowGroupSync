@@ -18,9 +18,9 @@ Setting Up
 
 ### Installing the Active Directory PowerShell Module
 
-If you plan to run this script on a Server 2008R2 or Server 2012 Domain Controller, the Active Directory PowerShell module should already be installed.
+If you plan to run this script on a Server 2008 R2 or Server 2012 Domain Controller, the Active Directory PowerShell module should already be installed.
 
-Alternatively, if you wish to run this script from a Server 2008R2 or Server 2012 member server, you will need to install the AD-PowerShell module first. To do this, run PowerShell as an Administrator, then run the following commands:
+Alternatively, if you wish to run this script from a Server 2008 R2 or Server 2012 member server, you will need to install the ActiveDirectory PowerShell module first. To do this, run PowerShell as an Administrator, then run the following commands:
 
 > Import-Module ServerManager
 
@@ -69,15 +69,44 @@ Usage
 
 You can run the script in a couple of ways. In most production environments, you can use a scheduled task to run the script.
 
-The following command will run the script and log the output to a specific directory.
-
-> powershell.exe -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format d.M.yyyy.HH.mm) + '.log')"
-
+### Standard
 If you want to run the script normally, you can call the PowerShell script either with or without the '-file' argument.
 
 > ./shadowGroupSync.ps1 'C:\path\to\csv'
 
 > ./shadowGroupSync.ps1 -file 'C:\path\to\csv'
+
+### With Logging
+The following command will run the script and log the output to a specific directory.
+
+PowerShell 3 (Windows Server 2012 and later).
+> powershell.exe -NoProfile -ExecutionPolicy Bypass -command "c:\path\shadowGroupSync.ps1 -file c:\path\ShadowGroups.csv | tee -file ('c:\path\shadowGroupSync-'+ (Get-Date -format yyyy.M.d-HH.mm) + '.log')"
+
+PowerShell 2 (Windows Server 2008 R2)
+> powershell.exe -NoProfile -ExecutionPolicy Bypass -command ""c:\path\shadowGroupSync.ps1 -verbose -file "c:\path\ShadowGroups.csv" 2>&1 > "c:\path\shadowGroupSync.log"
+
+### Scheduled Task
+
+If running as a scheduled task, it is recommended to use a service account with limited privleges to the domain. 
+The following steps should produce the desired results:
+
+1. Create a service account (i.e. `svcShadowGroups`)
+  * Set a secure password that does not expire
+2. Add the account to a `Service Accounts` security group
+3. Add the account to a `Group Operators` security group
+  * Give this group `Create/Delete Groups` permission to desired areas
+  * Also give `List, Read, Write, Delete` permission to `Descendant Groups`
+4. Add Group Policy to relevant servers/computers to allow `Run as` permissions
+  * Under `Computer Configuration -> Windows Settings -> Security Settings -> Local Policies -> User Rights Assignment`:
+  * Configure `Logon as a batch job` and 'Logon as a service' to include `Service Accounts`
+  * It is also recommended to include Administrators and Backup Operators
+5. Create a scheduled task on a server or computer
+  * `Change User or Group` to service acconut
+  * Run whether the user is logged on or not
+  * Set triggers for desired schedule
+  * Create an action to call script
+
+It may be easiest to put the call to the script in a batch file and call the batch file from the scheduled task, as the task scheduler GUI doesn't do too well with PowerShell scripts.
 
 ### Note
 If you are using this script with child domains, you may need to change the GroupScope of created shadow groups to Universal.
@@ -93,3 +122,4 @@ Thanks
 - i3laze - Updated the script to deal with syncing mail-enabled users and child domains.
 - Dmitry - Submitted a correction when using the script to generate groups for [Fine-Grained Password Policies](http://technet.microsoft.com/en-us/library/cc770394).
 - Alex - Highlighted some bugs that needed fixing.
+- inarius - Highlighted some compatibility issues.
