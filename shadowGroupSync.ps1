@@ -133,7 +133,7 @@ Function Add-ShadowGroupMember($group, $member)
   Try
   {
     Write-Verbose "Adding $($member.Name)"
-    Add-ADGroupMember -Identity $group -Member $member.objectGUID -ErrorAction Stop
+    Add-ADGroupMember -Identity $group -Members $member.objectGUID -ErrorAction Stop
   }
 
   Catch
@@ -153,7 +153,7 @@ Function Remove-ShadowGroupMember($group, $member)
   Try
   {
     Write-Verbose "Removing $($member.Name)"
-    Remove-ADGroupMember -Identity $group -Member $member.objectGUID -Confirm:$false -ErrorAction Stop
+    Remove-ADGroupMember -Identity $group -Members $member.objectGUID -Confirm:$false -ErrorAction Stop
   }
 
   Catch
