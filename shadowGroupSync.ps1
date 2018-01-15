@@ -107,7 +107,7 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope) {
 #Param3: $scope - The grouptype the shadowgroup should be created as (If it doesn't exist)
 #        Example: 0 (Distribution) or 1 (Security)
 Function Get-ShadowGroupMembers($groupname, $destou, $grouptype) {
-    if (!(Get-ADGroup -Filter {SamAccountName -eq $groupname} -SearchBase $destou)) {
+    if ( -not (Get-ADGroup -Filter { SamAccountName -eq $groupname } -SearchBase $destou)) {
         #For use with Fine Grained Password Policies, the GroupScope should be Global.
         #If you are using this script with child domains, it may need to be set to Universal.
         New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Groupcategory $grouptype -GroupScope Global
@@ -216,7 +216,7 @@ Function Confirm-Destination($destou, $groupname) {
 foreach ($cs in $csv) {
     Write-Debug $cs
 
-    if (!(Confirm-Destination $cs.DestOU $cs.GroupName)) {
+    if ( -not (Confirm-Destination $cs.DestOU $cs.GroupName)) {
         continue
     }
 
@@ -225,7 +225,7 @@ foreach ($cs in $csv) {
     $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Destou (Check-GroupCategory $cs.GroupType)
 
     #If the group is empty, populate the group.
-    if ((!$groupmembers) -and ($obj)) {
+    if ( -not ($groupmembers) -and ($obj)) {
         Write-Verbose "$($cs.GroupName) is empty"
 
         foreach ($o in $obj) {
