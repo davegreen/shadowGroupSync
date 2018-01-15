@@ -107,10 +107,14 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope) {
 #Param3: $scope - The grouptype the shadowgroup should be created as (If it doesn't exist)
 #        Example: 0 (Distribution) or 1 (Security)
 Function Get-ShadowGroupMembers($groupname, $destou, $grouptype) {
-    if ( -not (Get-ADGroup -Filter { SamAccountName -eq $groupname } -SearchBase $destou)) {
+    $adgroup = Get-ADGroup -Filter { SamAccountName -eq $groupname } -Properties Description -SearchBase $destou
+    if ( -not ($adgroup)) {
         #For use with Fine Grained Password Policies, the GroupScope should be Global.
         #If you are using this script with child domains, it may need to be set to Universal.
-        New-ADGroup -Name $groupname -SamAccountName $groupname -Path $destou -Groupcategory $grouptype -GroupScope Global
+        New-ADGroup -Name $groupname -SamAccountName $groupname -Description 'ShadowGroup' -Path $destou -Groupcategory $grouptype -GroupScope Global
+    }
+    elseif ($adgroup.Description -ne 'ShadowGroup') {
+        Set-ADGroup -Identity $adgroup -Description 'ShadowGroup'
     }
 
     $groupmembers = Get-ADGroupMember -Identity $groupname
