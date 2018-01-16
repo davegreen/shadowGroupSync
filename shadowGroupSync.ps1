@@ -32,7 +32,7 @@
 #Grab the CSV file from args
 param(
     [parameter(
-        Mandatory,
+        Mandatory = $true,
         Position = 1,
         HelpMessage = 'The location of the shadowGroupSync definition CSV.'
     )]
