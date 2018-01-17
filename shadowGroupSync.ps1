@@ -22,12 +22,12 @@
 #>
 
 #--CSV Format--
-#Domain,ObjType,SourceOU,DestOU,GroupName,GroupType,Recurse
-#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security","SubTree"
+#Domain,ObjType,SourceOU,DestOU,GroupName,GroupType,Recurse,Description
+#"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1","Security","SubTree","A Description"
 #"contoso.com","computer","OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A2","Security","SubTree"
 #"contoso.com","computer","OU=A1,OU=A_Block,OU=Computers,DC=contoso,DC=com;OU=A2,OU=A_Block,OU=Computers,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Block-A1-A2","Security","Base"
-#"contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution","SubTree"
-#"child.contoso.com","user-mail-enabled","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel"
+#"contoso.com","user","OU=A1Users,OU=Users,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A1","Distribution","SubTree","Another Description"
+#"child.contoso.com","user-mail-enabled","OU=A2Users,DC=child,DC=contoso,DC=com","OU=ShadowGroups,DC=contoso,DC=com","Users-A2","Distribution","OneLevel",""
 
 #Grab the CSV file from args
 param(
@@ -106,15 +106,15 @@ Function Get-SourceObjects($searchbase, $domain, $type, $scope) {
 #        Example: "OU=ShadowGroups,DC=contoso,DC=com"
 #Param3: $scope - The grouptype the shadowgroup should be created as (If it doesn't exist)
 #        Example: 0 (Distribution) or 1 (Security)
-Function Get-ShadowGroupMembers($groupname, $destou, $grouptype) {
+Function Get-ShadowGroupMembers($groupname, $destou, $grouptype, $description) {
     $adgroup = Get-ADGroup -Filter { SamAccountName -eq $groupname } -Properties Description -SearchBase $destou
     if ( -not ($adgroup)) {
         #For use with Fine Grained Password Policies, the GroupScope should be Global.
         #If you are using this script with child domains, it may need to be set to Universal.
-        New-ADGroup -Name $groupname -SamAccountName $groupname -Description 'ShadowGroup' -Path $destou -Groupcategory $grouptype -GroupScope Global
+        New-ADGroup -Name $groupname -SamAccountName $groupname -Description $description -Path $destou -Groupcategory $grouptype -GroupScope Global
     }
-    elseif ($adgroup.Description -ne 'ShadowGroup') {
-        Set-ADGroup -Identity $adgroup -Description 'ShadowGroup'
+    elseif ($adgroup.Description -ne $description) {
+        Set-ADGroup -Identity $adgroup -Description $description
     }
 
     $groupmembers = Get-ADGroupMember -Identity $groupname
@@ -226,7 +226,7 @@ foreach ($cs in $csv) {
 
     #Populate the source and destination set for comparison.
     $obj          = Get-SourceObjects $cs.SourceOU $cs.Domain $cs.ObjType (Check-SourceScope $cs.Recurse)
-    $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Destou (Check-GroupCategory $cs.GroupType)
+    $groupmembers = Get-ShadowGroupMembers $cs.Groupname $cs.Destou (Check-GroupCategory $cs.GroupType) $cs.Description
 
     #If the group is empty, populate the group.
     if ( -not ($groupmembers) -and ($obj)) {
